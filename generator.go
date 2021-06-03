@@ -7,6 +7,7 @@ import (
 	"github.com/actgardner/gogen-avro/v8/parser"
 	"github.com/actgardner/gogen-avro/v8/resolver"
 	"github.com/riferrei/srclient"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -36,6 +37,11 @@ type Generator struct {
 }
 
 func (g *Generator) Generate(req GenerationRequest) error {
+	log.Printf("Generating to package %q in directory %q\n", req.Package, req.TargetDir)
+	for _, s := range req.Schemas {
+		log.Printf(" - %s@%s", s.Subject, s.Version)
+	}
+
 	schemas, err := g.fetchSchemas(req.Schemas...)
 	if err != nil {
 		return err
