@@ -14,7 +14,7 @@ import (
 
 type GenerationRequest struct {
 	Package   string            `yaml:"package"`
-	TargetDir string            `yaml:"target_dir"`
+	TargetDir string            `yaml:"targetDir"`
 	Schemas   []SchemaReference `yaml:"schemas"`
 }
 
