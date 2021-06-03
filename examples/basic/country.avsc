@@ -1,0 +1,9 @@
+{
+  "fields": [
+    { "name": "code", "type": "string" },
+    { "name": "name", "type": "string" }
+  ],
+  "name": "Country",
+  "namespace": "basic",
+  "type": "record"
+}

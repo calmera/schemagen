@@ -1,0 +1,11 @@
+{
+  "fields": [
+    { "name": "id", "type": "string" },
+    { "name": "name", "type": "string" },
+    { "name": "zipcode", "type": "string" },
+    { "name": "country", "type": "basic.Country" }
+  ],
+  "name": "City",
+  "namespace": "basic",
+  "type": "record"
+}

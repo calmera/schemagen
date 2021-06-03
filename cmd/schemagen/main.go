@@ -1,22 +1,27 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"os"
+	"github.com/calmera/schemagen"
+	"github.com/riferrei/srclient"
+	"log"
 	"strings"
-
-	"github.com/burdiyan/schemagen"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
+type Config struct {
+	schemagen.GenerationRequest
+	Registry string `yaml:"registry" valid:"required"`
+}
+
 func main() {
 	var (
-		cfgFile string
-		cfg     schemagen.Config
+		cfgFile  string
+		cfg      Config
+		username string
+		password string
 	)
 
 	rootCmd := &cobra.Command{
@@ -25,21 +30,28 @@ func main() {
 			return initConfig(cfgFile, &cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return schemagen.Run(context.TODO(), cfg)
+			client := srclient.CreateSchemaRegistryClient(cfg.Registry)
+
+			if username != "" && password != "" {
+				client.SetCredentials(username, password)
+			}
+
+			gen := schemagen.NewGenerator(cfg.Registry, client)
+
+			return gen.Generate(cfg.GenerationRequest)
 		},
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default .schemagen.yaml in the current directory")
-	rootCmd.PersistentFlags().BoolVar(&cfg.NoFetch, "no-fetch", false, "disable fetch and only compile schemas from source directory")
+	rootCmd.PersistentFlags().StringVar(&username, "username", "", "the username for the schema registry")
+	rootCmd.PersistentFlags().StringVar(&username, "password", "", "the password for the schema registry")
 
 	if err := bindFlags(rootCmd.PersistentFlags(), viper.GetViper()); err != nil {
-		fmt.Fprint(os.Stderr, err.Error())
-		os.Exit(1)
+		log.Panic(err)
 	}
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprint(os.Stderr, err.Error())
-		os.Exit(1)
+		log.Panic(err)
 	}
 }
 
@@ -56,7 +68,7 @@ func bindFlags(fs *pflag.FlagSet, v *viper.Viper) error {
 	return err
 }
 
-func initConfig(cfgFile string, cfg *schemagen.Config) error {
+func initConfig(cfgFile string, cfg *Config) error {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -65,10 +77,8 @@ func initConfig(cfgFile string, cfg *schemagen.Config) error {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-
+		return err
 	}
 
-	viper.Unmarshal(cfg)
-
-	return nil
+	return viper.Unmarshal(cfg)
 }
